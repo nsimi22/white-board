@@ -20,7 +20,7 @@ let lastX    = 0, lastY    = 0;
 
 const history = [];  // stack of ImageData snapshots
 const redoStack = [];
-const MAX_HISTORY = 60;
+const MAX_HISTORY = 20;
 
 // ── Resize ─────────────────────────────────────────────────────────────────
 
@@ -155,6 +155,12 @@ overlay.addEventListener('pointerleave', e => {
   }
 });
 
+overlay.addEventListener('pointercancel', () => {
+  drawing = false;
+  ctx.globalCompositeOperation = 'source-over';
+  octx.clearRect(0, 0, overlay.width, overlay.height);
+});
+
 // ── Text tool ──────────────────────────────────────────────────────────────
 
 function placeTextInput(e) {
@@ -194,7 +200,7 @@ function commitText() {
   ctx.fillStyle   = color;
   ctx.font        = `${fs}px system-ui, sans-serif`;
   const lines = text.split('\n');
-  lines.forEach((line, i) => ctx.fillText(line, x, y + fs + i * fs * 1.2));
+  lines.forEach((line, i) => ctx.fillText(line, x + 6, y + 4 + fs + i * fs * 1.4));
   ctx.globalAlpha = 1;
   textInput.style.display = 'none';
 }
@@ -249,9 +255,16 @@ document.getElementById('btn-clear').addEventListener('click', () => {
 });
 
 document.getElementById('btn-save').addEventListener('click', () => {
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = canvas.width;
+  tempCanvas.height = canvas.height;
+  const tctx = tempCanvas.getContext('2d');
+  tctx.fillStyle = '#ffffff';
+  tctx.fillRect(0, 0, canvas.width, canvas.height);
+  tctx.drawImage(canvas, 0, 0);
   const link = document.createElement('a');
   link.download = 'whiteboard.png';
-  link.href = canvas.toDataURL('image/png');
+  link.href = tempCanvas.toDataURL('image/png');
   link.click();
 });
 
