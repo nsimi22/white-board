@@ -1,0 +1,133 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f4f4f5;
+  --toolbar-bg: #ffffff;
+  --toolbar-border: #e4e4e7;
+  --accent: #6366f1;
+  --accent-hover: #4f46e5;
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --btn-bg: #f4f4f5;
+  --btn-hover: #e4e4e7;
+  --btn-active-bg: #6366f1;
+  --btn-active-color: #ffffff;
+  --text: #18181b;
+  --shadow: 0 1px 3px rgba(0,0,0,.12);
+}
+
+html, body { height: 100%; overflow: hidden; background: var(--bg); font-family: system-ui, sans-serif; color: var(--text); }
+
+#app { display: flex; flex-direction: column; height: 100%; }
+
+/* ── Toolbar ── */
+#toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--toolbar-bg);
+  border-bottom: 1px solid var(--toolbar-border);
+  box-shadow: var(--shadow);
+  z-index: 10;
+  user-select: none;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border-right: 1px solid var(--toolbar-border);
+}
+.toolbar-group:last-child { border-right: none; }
+
+/* Tool buttons */
+.tool-btn {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--btn-bg); border: 1px solid transparent;
+  border-radius: 6px; cursor: pointer; color: var(--text);
+  transition: background .15s, border-color .15s, color .15s;
+}
+.tool-btn svg { width: 18px; height: 18px; }
+.tool-btn:hover { background: var(--btn-hover); }
+.tool-btn.active { background: var(--btn-active-bg); color: var(--btn-active-color); border-color: var(--accent-hover); }
+
+/* Action buttons */
+.action-btn {
+  padding: 5px 12px;
+  background: var(--btn-bg); border: 1px solid var(--toolbar-border);
+  border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;
+  color: var(--text); transition: background .15s;
+}
+.action-btn:hover { background: var(--btn-hover); }
+.action-btn.danger { color: var(--danger); }
+.action-btn.danger:hover { background: var(--danger); color: #fff; border-color: var(--danger-hover); }
+
+/* Color pickers */
+.color-label {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 2px; font-size: 11px; cursor: pointer;
+}
+.color-label input[type="color"] {
+  width: 32px; height: 26px; border: 1px solid var(--toolbar-border);
+  border-radius: 4px; cursor: pointer; padding: 1px;
+}
+
+/* Fill toggle */
+.toggle-label {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 12px; cursor: pointer;
+}
+.toggle-label input { cursor: pointer; }
+
+/* Range inputs */
+.range-label {
+  display: flex; align-items: center; gap: 6px; font-size: 12px;
+}
+.range-label input[type="range"] { width: 72px; cursor: pointer; }
+.range-label span:last-child { width: 22px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ── Canvas area ── */
+#canvas-container {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(0,0,0,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,.06) 1px, transparent 1px),
+    #ffffff;
+  background-size: 24px 24px;
+}
+
+#canvas, #overlay {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  touch-action: none;
+}
+#canvas  { z-index: 1; }
+#overlay { z-index: 2; cursor: crosshair; }
+
+/* Cursor overrides per tool */
+body.tool-eraser  #overlay { cursor: cell; }
+body.tool-text    #overlay { cursor: text; }
+body.tool-pen     #overlay { cursor: crosshair; }
+
+/* Text input overlay */
+#text-input {
+  position: absolute;
+  z-index: 3;
+  display: none;
+  min-width: 120px; min-height: 36px;
+  padding: 4px 6px;
+  font-size: 18px;
+  background: rgba(255,255,255,.9);
+  border: 1.5px dashed var(--accent);
+  border-radius: 4px;
+  outline: none;
+  resize: both;
+  overflow: hidden;
+  line-height: 1.4;
+}
