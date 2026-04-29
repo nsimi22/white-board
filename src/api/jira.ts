@@ -1,11 +1,14 @@
 import axios from 'axios';
 import { JiraConfig, JiraProject, JiraIssue } from '../types/jira';
+import { getAuthToken } from '../store/useStore';
 
 function headers(cfg: JiraConfig) {
+  const token = getAuthToken();
   return {
     'x-jira-domain': cfg.domain,
     'x-jira-email': cfg.email,
     'x-jira-token': cfg.apiToken,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
 
@@ -27,9 +30,13 @@ export async function fetchProjects(cfg: JiraConfig): Promise<JiraProject[]> {
   return res.data as JiraProject[];
 }
 
+function sanitizeKey(key: string) {
+  return key.replace(/"/g, '\\"');
+}
+
 export async function fetchEpics(cfg: JiraConfig): Promise<JiraIssue[]> {
   const jql = encodeURIComponent(
-    `project = "${cfg.projectKey}" AND issuetype = Epic ORDER BY created DESC`
+    `project = "${sanitizeKey(cfg.projectKey)}" AND issuetype = Epic ORDER BY created DESC`
   );
   const res = await axios.get(
     `/proxy/rest/api/3/search?jql=${jql}&fields=${EPIC_FIELDS}&maxResults=200`,
@@ -44,8 +51,8 @@ export async function fetchStoriesForEpic(
 ): Promise<JiraIssue[]> {
   // Support both classic (Epic Link) and next-gen (parent) projects
   const jql = encodeURIComponent(
-    `project = "${cfg.projectKey}" AND issuetype in (Story, Task, Bug, Sub-task) ` +
-    `AND (parent = "${epicKey}" OR "Epic Link" = "${epicKey}") ORDER BY created ASC`
+    `project = "${sanitizeKey(cfg.projectKey)}" AND issuetype in (Story, Task, Bug, Sub-task) ` +
+    `AND (parent = "${sanitizeKey(epicKey)}" OR "Epic Link" = "${sanitizeKey(epicKey)}") ORDER BY created ASC`
   );
   const res = await axios.get(
     `/proxy/rest/api/3/search?jql=${jql}&fields=${STORY_FIELDS}&maxResults=200`,

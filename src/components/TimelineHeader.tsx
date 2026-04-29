@@ -1,7 +1,6 @@
 import {
   eachMonthOfInterval,
   eachWeekOfInterval,
-  eachDayOfInterval,
   eachQuarterOfInterval,
   format,
   getDaysInMonth,
@@ -90,25 +89,6 @@ export default function TimelineHeader({ timelineStart, timelineEnd, zoom }: Pro
     });
   };
 
-  const renderDayTicks = () => {
-    const days = eachDayOfInterval({ start: timelineStart, end: timelineEnd });
-    return days.map((day) => {
-      const isWeekend = day.getDay() === 0 || day.getDay() === 6;
-      const left = dateToX(day, timelineStart, dayWidth);
-      return (
-        <div
-          key={day.toISOString()}
-          className={`absolute top-0 h-full flex items-center justify-center border-r border-[#1e2f57]/50 ${isWeekend ? 'bg-[#162244]/30' : ''}`}
-          style={{ left, width: dayWidth }}
-        >
-          <span className={`text-[10px] select-none ${isWeekend ? 'text-slate-600' : 'text-slate-500'}`}>
-            {format(day, 'd')}
-          </span>
-        </div>
-      );
-    });
-  };
-
   const totalWidth = differenceInDays(timelineEnd, timelineStart) * dayWidth + dayWidth;
   const todayX = dateToX(today, timelineStart, dayWidth);
   const showToday = todayX >= 0 && todayX <= totalWidth;
@@ -128,11 +108,9 @@ export default function TimelineHeader({ timelineStart, timelineEnd, zoom }: Pro
           {zoom === 'quarter' ? renderQuarterRow() : renderMonthRow()}
         </div>
 
-        {/* Secondary row: weeks or days */}
+        {/* Secondary row: weeks (month/week zoom) */}
         <div className="absolute bottom-0 left-0 right-0 h-1/2 border-t border-[#1e2f57]/40">
-          {zoom === 'day' ? null /* single-row for day zoom */ : null}
-          {zoom === 'week' || zoom === 'month' ? renderWeekTicks() : null}
-          {zoom === 'day' ? renderDayTicks() : null}
+          {(zoom === 'week' || zoom === 'month') && renderWeekTicks()}
         </div>
 
         {/* Today indicator line in header */}

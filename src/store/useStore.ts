@@ -1,6 +1,32 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { JiraConfig, RoadmapEpic, ZoomLevel, EPIC_COLORS, JiraIssue } from '../types/jira';
+
+// Auth session (persisted in sessionStorage — clears on tab close)
+interface AuthSession {
+  token: string;
+  email: string;
+  isAdmin: boolean;
+}
+
+const authStore = create<{
+  session: AuthSession | null;
+  setSession: (s: AuthSession | null) => void;
+}>()(
+  persist(
+    (set) => ({
+      session: null,
+      setSession: (s) => set({ session: s }),
+    }),
+    {
+      name: 'jira-roadmap-auth',
+      storage: createJSONStorage(() => sessionStorage),
+    }
+  )
+);
+
+export const useAuthStore = authStore;
+export const getAuthToken = () => authStore.getState().session?.token ?? null;
 
 interface FilterState {
   status: string[];      // statusCategory keys: 'new' | 'indeterminate' | 'done'

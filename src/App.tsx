@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Settings,
   RefreshCw,
@@ -6,12 +6,16 @@ import {
   AlertCircle,
   Loader2,
   GitBranch,
+  Shield,
+  LogOut,
 } from 'lucide-react';
-import { useStore } from './store/useStore';
+import { useStore, useAuthStore } from './store/useStore';
 import { useJira } from './hooks/useJira';
 import ConfigPanel from './components/ConfigPanel';
 import RoadmapTimeline from './components/RoadmapTimeline';
 import Filters from './components/Filters';
+import LoginScreen from './components/LoginScreen';
+import AdminPanel from './components/AdminPanel';
 import { ZoomLevel } from './types/jira';
 
 const ZOOM_LEVELS: { key: ZoomLevel; label: string }[] = [
@@ -22,6 +26,7 @@ const ZOOM_LEVELS: { key: ZoomLevel; label: string }[] = [
 ];
 
 export default function App() {
+  const { session, setSession } = useAuthStore();
   const {
     config,
     epics,
@@ -36,14 +41,20 @@ export default function App() {
   } = useStore();
 
   const { loadEpics } = useJira();
+  const [adminOpen, setAdminOpen] = useState(false);
 
   // Auto-load epics when config is set and we have none yet
   useEffect(() => {
-    if (config && epics.length === 0 && !isLoading) {
+    if (session && config && epics.length === 0 && !isLoading) {
       loadEpics();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config]);
+  }, [session, config]);
+
+  // Not authenticated — show login gate
+  if (!session) {
+    return <LoginScreen />;
+  }
 
   const savingCount = pendingSaves.size;
 
@@ -74,7 +85,6 @@ export default function App() {
           </button>
         )}
 
-        {/* Separator */}
         <div className="flex-1" />
 
         {/* Save indicator */}
@@ -85,7 +95,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Filters (inline in nav for compactness) */}
+        {/* Filters */}
         {config && epics.length > 0 && <Filters />}
 
         {/* Zoom controls */}
@@ -119,14 +129,36 @@ export default function App() {
           </button>
         )}
 
-        {/* Settings */}
+        {/* Admin button (admins only) */}
+        {session.isAdmin && (
+          <button
+            onClick={() => setAdminOpen(true)}
+            title="Admin Panel"
+            className="p-2 rounded-lg border border-[#1e2f57] text-indigo-400 hover:text-indigo-300
+                       hover:bg-[#162244] transition-colors"
+          >
+            <Shield size={15} />
+          </button>
+        )}
+
+        {/* Jira settings */}
         <button
           onClick={() => setIsConfigOpen(true)}
-          title="Settings"
+          title="Jira Settings"
           className="p-2 rounded-lg border border-[#1e2f57] text-slate-400 hover:text-slate-200
                      hover:bg-[#162244] transition-colors"
         >
           <Settings size={15} />
+        </button>
+
+        {/* Sign out */}
+        <button
+          onClick={() => setSession(null)}
+          title={`Sign out (${session.email})`}
+          className="p-2 rounded-lg border border-[#1e2f57] text-slate-500 hover:text-rose-400
+                     hover:bg-rose-500/10 hover:border-rose-500/30 transition-colors"
+        >
+          <LogOut size={15} />
         </button>
       </header>
 
@@ -146,7 +178,6 @@ export default function App() {
 
       {/* ── Main content ── */}
       {!config ? (
-        // Welcome / empty state
         <div className="flex-1 flex flex-col items-center justify-center gap-6 px-4">
           <div className="w-16 h-16 rounded-2xl bg-indigo-600/20 border border-indigo-500/30
                           flex items-center justify-center">
@@ -169,23 +200,19 @@ export default function App() {
             <Settings size={16} />
             Connect Jira
           </button>
-          <p className="text-xs text-slate-600 text-center max-w-xs">
-            Credentials are stored in your browser only and never sent anywhere except directly to your Jira instance.
-          </p>
         </div>
       ) : isLoading && epics.length === 0 ? (
-        // Initial load state
         <div className="flex-1 flex flex-col items-center justify-center gap-3 text-slate-400">
           <Loader2 size={28} className="animate-spin text-indigo-500" />
           <p className="text-sm">Loading epics from {config.projectName ?? config.projectKey}…</p>
         </div>
       ) : (
-        // Timeline
         <RoadmapTimeline />
       )}
 
-      {/* ── Config modal ── */}
+      {/* ── Modals ── */}
       {isConfigOpen && <ConfigPanel />}
+      {adminOpen && <AdminPanel onClose={() => setAdminOpen(false)} />}
     </div>
   );
 }

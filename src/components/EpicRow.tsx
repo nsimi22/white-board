@@ -213,20 +213,14 @@ interface EpicRowProps {
   epic: RoadmapEpic;
   timelineStart: Date;
   zoom: ZoomLevel;
+  totalWidth: number;
 }
 
-export default function EpicRow({ epic, timelineStart, zoom }: EpicRowProps) {
+export default function EpicRow({ epic, timelineStart, zoom, totalWidth }: EpicRowProps) {
   const dayWidth = DAY_WIDTH[zoom];
   const { toggleEpicExpand, updateEpicDates, updateStoryDates, pendingSaves, config } =
     useStore();
   const { loadChildren, saveIssueDates } = useJira();
-
-  const totalDays =
-    differenceInDays(
-      addDays(timelineStart, 365 * 2),
-      timelineStart
-    );
-  const totalWidth = totalDays * dayWidth;
 
   function handleToggle() {
     if (!epic.childrenLoaded) loadChildren(epic.key);
@@ -315,12 +309,6 @@ export default function EpicRow({ epic, timelineStart, zoom }: EpicRowProps) {
           className="relative flex-shrink-0 border-b border-[#1e2f57] group-hover/epic:bg-[#0d1526]/50"
           style={{ width: totalWidth, height: ROW_HEIGHT_EPIC }}
         >
-          {/* Grid lines (vertical) rendered here per row for paint efficiency */}
-          <GridLines timelineStart={timelineStart} zoom={zoom} totalWidth={totalWidth} height={ROW_HEIGHT_EPIC} />
-
-          {/* Today line */}
-          <TodayLine timelineStart={timelineStart} dayWidth={dayWidth} height={ROW_HEIGHT_EPIC} />
-
           <DragBar
             issueKey={epic.key}
             summary={epic.fields.summary}
@@ -433,8 +421,6 @@ function StoryRow({ story, epicColor, timelineStart, dayWidth, totalWidth, onCom
         className="relative flex-shrink-0 border-b border-[#1e2f57]/60 bg-[#080d16] group-hover/story:bg-[#0a1020]"
         style={{ width: totalWidth, height: ROW_HEIGHT_STORY }}
       >
-        <TodayLine timelineStart={timelineStart} dayWidth={dayWidth} height={ROW_HEIGHT_STORY} />
-
         <DragBar
           issueKey={story.key}
           summary={story.fields.summary}
@@ -453,69 +439,3 @@ function StoryRow({ story, epicColor, timelineStart, dayWidth, totalWidth, onCom
   );
 }
 
-// ── GridLines ─────────────────────────────────────────────────────────────────
-
-interface GridLinesProps {
-  timelineStart: Date;
-  zoom: ZoomLevel;
-  totalWidth: number;
-  height: number;
-}
-
-function GridLines({ timelineStart, zoom, totalWidth }: GridLinesProps) {
-  const dayWidth = DAY_WIDTH[zoom];
-  const lines: number[] = [];
-
-  if (zoom === 'day') {
-    let d = startOfDay(timelineStart);
-    while (dateToX(d, timelineStart, dayWidth) < totalWidth) {
-      lines.push(dateToX(d, timelineStart, dayWidth));
-      d = addDays(d, 1);
-    }
-  } else if (zoom === 'week') {
-    let d = startOfDay(timelineStart);
-    while (dateToX(d, timelineStart, dayWidth) < totalWidth) {
-      if (d.getDay() === 1) lines.push(dateToX(d, timelineStart, dayWidth));
-      d = addDays(d, 1);
-    }
-  } else {
-    // month / quarter: draw lines at month boundaries
-    let d = new Date(timelineStart.getFullYear(), timelineStart.getMonth(), 1);
-    while (dateToX(d, timelineStart, dayWidth) < totalWidth) {
-      lines.push(dateToX(d, timelineStart, dayWidth));
-      d = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-    }
-  }
-
-  return (
-    <>
-      {lines.map((x) => (
-        <div
-          key={x}
-          className="absolute top-0 bottom-0 w-px bg-[#1e2f57]/50 pointer-events-none"
-          style={{ left: x }}
-        />
-      ))}
-    </>
-  );
-}
-
-// ── TodayLine ─────────────────────────────────────────────────────────────────
-
-function TodayLine({
-  timelineStart,
-  dayWidth,
-}: {
-  timelineStart: Date;
-  dayWidth: number;
-  height: number;
-}) {
-  const todayX = dateToX(startOfDay(new Date()), timelineStart, dayWidth) + dayWidth / 2;
-  if (todayX < 0) return null;
-  return (
-    <div
-      className="absolute top-0 bottom-0 w-px bg-rose-500/40 pointer-events-none z-0"
-      style={{ left: todayX }}
-    />
-  );
-}
