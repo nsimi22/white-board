@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-export const ADMIN_EMAILS = ['nick.simi@sunpower.com', 'landon.blume@sunpower.com'];
+export const ADMIN_EMAILS = ['nick.simi@sunpower.com', 'landen.blume@sunpower.com'];
 const ALLOWED_DOMAIN = '@sunpower.com';
 const TOKEN_TTL_HOURS = 8;
 

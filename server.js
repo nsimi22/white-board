@@ -38,7 +38,7 @@ async function saveConfig(updates) {
 }
 
 // ── Admin list ─────────────────────────────────────────────────────────────────
-const ADMIN_EMAILS = ['nick.simi@sunpower.com', 'landon.blume@sunpower.com'];
+const ADMIN_EMAILS = ['nick.simi@sunpower.com', 'landen.blume@sunpower.com'];
 const ALLOWED_DOMAIN = '@sunpower.com';
 
 function isSunPower(email) {

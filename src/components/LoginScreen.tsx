@@ -29,7 +29,7 @@ export default function LoginScreen() {
       .catch(() => setMode('login'));
   }, []);
 
-  const ADMIN_EMAILS = ['nick.simi@sunpower.com', 'landon.blume@sunpower.com'];
+  const ADMIN_EMAILS = ['nick.simi@sunpower.com', 'landen.blume@sunpower.com'];
   const isSunPower = email.toLowerCase().endsWith('@sunpower.com');
   const isAdminEmail = ADMIN_EMAILS.includes(email.toLowerCase());
 
@@ -192,7 +192,7 @@ export default function LoginScreen() {
               <>Need access? Contact{' '}
                 <a href="mailto:nick.simi@sunpower.com" className="hover:text-slate-700 dark:hover:text-slate-400">Nick Simi</a>
                 {' '}or{' '}
-                <a href="mailto:landon.blume@sunpower.com" className="hover:text-slate-700 dark:hover:text-slate-400">Landon Blume</a>.
+                <a href="mailto:landen.blume@sunpower.com" className="hover:text-slate-700 dark:hover:text-slate-400">Landen Blume</a>.
               </>
             ) : (
               'Access restricted to SunPower employees.'
