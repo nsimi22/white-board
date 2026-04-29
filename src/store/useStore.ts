@@ -42,7 +42,8 @@ interface AppStore {
   isConfigOpen: boolean;
   zoom: ZoomLevel;
   filters: FilterState;
-  pendingSaves: Set<string>;  // issue keys with unsaved date changes
+  pendingSaves: Set<string>;
+  theme: 'dark' | 'light';
 
   setConfig: (config: JiraConfig) => void;
   clearConfig: () => void;
@@ -57,6 +58,7 @@ interface AppStore {
   setIsConfigOpen: (open: boolean) => void;
   setZoom: (zoom: ZoomLevel) => void;
   setFilters: (filters: Partial<FilterState>) => void;
+  toggleTheme: () => void;
 }
 
 export const useStore = create<AppStore>()(
@@ -70,6 +72,7 @@ export const useStore = create<AppStore>()(
       zoom: 'month',
       filters: { status: [], assignee: [], labels: [] },
       pendingSaves: new Set(),
+      theme: 'dark',
 
       setConfig: (config) => set({ config, epics: [], error: null }),
       clearConfig: () => set({ config: null, epics: [] }),
@@ -149,10 +152,12 @@ export const useStore = create<AppStore>()(
       setZoom: (zoom) => set({ zoom }),
       setFilters: (filters) =>
         set((state) => ({ filters: { ...state.filters, ...filters } })),
+      toggleTheme: () =>
+        set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
     }),
     {
       name: 'jira-roadmap-v1',
-      partialize: (state) => ({ config: state.config, zoom: state.zoom }),
+      partialize: (state) => ({ config: state.config, zoom: state.zoom, theme: state.theme }),
     }
   )
 );
