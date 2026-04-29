@@ -1,0 +1,8 @@
+{
+  "buildCommand": "vite build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/proxy/(.*)", "destination": "/api/proxy/$1" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}
