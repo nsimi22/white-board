@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const user = requireAuth(req, res);
+  const user = await requireAuth(req, res);
   if (!user) return;
 
   const domain = req.headers['x-jira-domain'];
@@ -15,11 +15,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing Jira credentials in request headers.' });
   }
 
-  // Build the Jira path from the catch-all segments
   const pathArr = Array.isArray(req.query.path) ? req.query.path : [req.query.path].filter(Boolean);
   const jiraPath = '/' + pathArr.join('/');
 
-  // Reconstruct query string without the 'path' param that Vercel injects
   const searchParams = new URLSearchParams();
   for (const [k, v] of Object.entries(req.query)) {
     if (k === 'path') continue;
